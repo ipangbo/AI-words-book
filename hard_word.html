@@ -50,8 +50,13 @@
  table {width: 100%; border-collapse: collapse; margin-top: 1rem; background: #f7f4ee; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 8px; overflow: hidden;}
  thead {background: linear-gradient(to bottom, #e0d8c3, #c0b19e); color: #333;}
  th, td {border: 1px solid #b0a38f; vertical-align: top; padding: 0.75rem; text-align: left;}
- /* Checkbox column */
- #subtitleTable th:first-child, #subtitleTable td:first-child {padding: 0.1rem; width: 2rem; text-align: center;}
+ /* Checkbox column centered */
+ #subtitleTable th:first-child, #subtitleTable td:first-child {
+   padding: 0.1rem;
+   width: 2rem;
+   text-align: center;
+   vertical-align: middle;
+ }
  /* Stripes */
  tbody tr:nth-child(odd) td:nth-child(2), tbody tr:nth-child(odd) td:nth-child(3), tbody tr:nth-child(odd) td:nth-child(4) {background: #f0eede;}
  tbody tr:nth-child(even) td:nth-child(2), tbody tr:nth-child(even) td:nth-child(3), tbody tr:nth-child(even) td:nth-child(4) {background: #faf7f2;}
@@ -65,12 +70,13 @@
    border: 1px solid transparent;
    transition: background 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
  }
+ /* Unknown words design: embossed pill style with soft blue tone */
  .word.unknown {
-   border: 2px dashed #888;
+   background: linear-gradient(to bottom, #ddeeff, #cce8ff);
+   border: 1px solid #99cceb;
+   box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.05);
  }
- .word:hover {
-   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
- }
+ .word:hover {box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);}   
  .word.selected {
    background: linear-gradient(to bottom, #fffacd, #ffe56b);
    border: 1px solid #d1b64b;
@@ -79,9 +85,7 @@
 </style>
 </head>
 <body>
-
 <h2>Subtitle Hard Words Picker</h2>
-
 <div class="controls">
   <label for="csvFile" class="file-label">Choose CSV File</label>
   <input type="file" id="csvFile" accept=".csv">
@@ -98,7 +102,6 @@
 
   <button id="exportBtn" disabled>Export CSV with Hard Words</button>
 </div>
-
 <table id="subtitleTable">
   <thead>
     <tr>
@@ -110,7 +113,6 @@
   </thead>
   <tbody></tbody>
 </table>
-
 <script>
 let rows = [], unknownWords = [];
 
