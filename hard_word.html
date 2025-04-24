@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Subtitle Hard Words Picker</title>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+ /* Base */
+ body {font-family: 'Segoe UI', sans-serif; background: #f0efe8; margin: 2rem; color: #333;}
+ h2 {margin-bottom: 1rem; text-shadow: 1px 1px 0 rgba(255,255,255,0.6);}
+ /* Controls */
+ .controls {margin-bottom: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;}
+ .file-label, button {
+   display: inline-block;
+   padding: 0.5rem 1rem;
+   background: linear-gradient(to bottom, #fafafa, #ccc);
+   border: 1px solid #aaa;
+   border-radius: 8px;
+   box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 3px 5px rgba(0,0,0,0.2);
+   cursor: pointer;
+   font-size: 1rem;
+   color: #333;
+   text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+ }
+ .file-label:hover, button:hover {background: linear-gradient(to bottom, #fff, #ddd);}
+ .file-label:active, button:active {box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);}
+ input[type="file"] {display: none;}
+ #fileNameDisplay, #unknownFileDisplay {font-size: 0.95rem; color: #555; margin-right: 1rem;}
+ /* Custom Checkbox */
+ input[type="checkbox"] {
+   -webkit-appearance: none;
+   appearance: none;
+   width: 1.2rem;
+   height: 1.2rem;
+   background: linear-gradient(to bottom, #fafafa, #ccc);
+   border: 1px solid #aaa;
+   border-radius: 4px;
+   box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 3px rgba(0,0,0,0.2);
+   cursor: pointer;
+   position: relative;
+   vertical-align: middle;
+   transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+ }
+ input[type="checkbox"]:checked {
+   background: linear-gradient(to bottom, #fffacd, #ffe56b);
+   border: 1px solid #d1b64b;
+   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+ }
+ /* Table */
+ table {width: 100%; border-collapse: collapse; margin-top: 1rem; background: #f7f4ee; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 8px; overflow: hidden;}
+ thead {background: linear-gradient(to bottom, #e0d8c3, #c0b19e); color: #333;}
+ th, td {border: 1px solid #b0a38f; vertical-align: top; padding: 0.75rem; text-align: left;}
+ /* Checkbox column */
+ #subtitleTable th:first-child, #subtitleTable td:first-child {padding: 0.1rem; width: 2rem; text-align: center;}
+ /* Stripes */
+ tbody tr:nth-child(odd) td:nth-child(2), tbody tr:nth-child(odd) td:nth-child(3), tbody tr:nth-child(odd) td:nth-child(4) {background: #f0eede;}
+ tbody tr:nth-child(even) td:nth-child(2), tbody tr:nth-child(even) td:nth-child(3), tbody tr:nth-child(even) td:nth-child(4) {background: #faf7f2;}
+ /* Words unified style */
+ .word {
+   cursor: pointer;
+   padding: 3px 4px;
+   margin: 1px;
+   border-radius: 6px;
+   display: inline-block;
+   border: 1px solid transparent;
+   transition: background 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+ }
+ .word.unknown {
+   border: 2px dashed #888;
+ }
+ .word:hover {
+   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+ }
+ .word.selected {
+   background: linear-gradient(to bottom, #fffacd, #ffe56b);
+   border: 1px solid #d1b64b;
+   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+ }
+</style>
+</head>
+<body>
+
+<h2>Subtitle Hard Words Picker</h2>
+
+<div class="controls">
+  <label for="csvFile" class="file-label">Choose CSV File</label>
+  <input type="file" id="csvFile" accept=".csv">
+  <span id="fileNameDisplay">No file chosen</span>
+
+  <label for="unknownFile" class="file-label">Upload Unknown Words</label>
+  <input type="file" id="unknownFile" accept=".txt">
+  <span id="unknownFileDisplay">No unknown words loaded</span>
+
+  <div class="toggle-container">
+    <input type="checkbox" id="toggleChinese" checked>
+    <label for="toggleChinese">Show Chinese Sentence</label>
+  </div>
+
+  <button id="exportBtn" disabled>Export CSV with Hard Words</button>
+</div>
+
+<table id="subtitleTable">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Start Time</th>
+      <th class="zh-col">Chinese Sentence</th>
+      <th>English Sentence (click words you find hard)</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+let rows = [], unknownWords = [];
+
+document.getElementById('csvFile').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('fileNameDisplay').textContent = file.name;
+  Papa.parse(file, {header:true, skipEmptyLines:true, complete: results => {
+    rows = results.data; buildTable(); document.getElementById('exportBtn').disabled=false;
+  }});
+});
+
+document.getElementById('unknownFile').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('unknownFileDisplay').textContent = file.name;
+  const reader = new FileReader(); reader.onload = evt => {
+    unknownWords = evt.target.result.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    highlightUnknown();
+  }; reader.readAsText(file);
+});
+
+document.getElementById('toggleChinese').addEventListener('change', function(){
+  const show = this.checked; const idx = 2;
+  document.querySelectorAll('#subtitleTable thead th')[idx].style.display = show ? '' : 'none';
+  document.querySelectorAll('#subtitleTable tbody tr').forEach(tr => {
+    tr.cells[idx].style.display = show ? '' : 'none';
+  });
+});
+
+function buildTable(){
+  const tbody = document.querySelector('#subtitleTable tbody'); tbody.innerHTML = '';
+  document.querySelector('#toggleChinese').dispatchEvent(new Event('change'));
+  rows.forEach((row,i) => {
+    const tr = document.createElement('tr');
+    const tdCB = document.createElement('td');
+    const cb = document.createElement('input'); cb.type='checkbox'; cb.className='learnSentence'; tdCB.appendChild(cb);
+    const tdStart = document.createElement('td'); tdStart.textContent = row['Start Time']||'';
+    const tdZh = document.createElement('td'); tdZh.textContent = row['Chinese Sentence']||'';
+    const tdEn = document.createElement('td'); tokenize(row['English Sentence']||'').forEach(w=>{
+      const span=document.createElement('span'); span.textContent=w; span.className='word'; span.onclick=()=>span.classList.toggle('selected'); tdEn.appendChild(span);
+    });
+    tr.append(tdCB, tdStart, tdZh, tdEn);
+    tbody.appendChild(tr);
+  }); highlightUnknown();
+}
+
+function tokenize(s){return s.match(/['\w]+|[^\s\w]/g)||[];}
+function highlightUnknown(){document.querySelectorAll('.word').forEach(span=>span.classList.toggle('unknown', unknownWords.includes(span.textContent.trim())));}
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const out = [];
+  document.querySelectorAll('#subtitleTable tbody tr').forEach((tr,i) => {
+    const hardWords = [...tr.querySelectorAll('.word.selected')].map(s => s.textContent);
+    const learn = tr.querySelector('.learnSentence').checked;
+    if(hardWords.length || learn) { const nr = {...rows[i]}; nr['Hard Words'] = JSON.stringify(hardWords); out.push(nr); }
+  });
+  if(!out.length) return alert('No rows to export.');
+  const csv = Papa.unparse(out);
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'subtitles_with_hard_words.csv'; document.body.appendChild(a); a.click(); a.remove();
+});
+</script>
+</body>
+</html>
