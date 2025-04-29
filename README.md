@@ -13,6 +13,7 @@
 - ✅ **句子表达收藏**：每行字幕前的复选框允许你收藏值得学习的表达方式；
 - ✅ **拟物化设计**：全局采用拟物风格 UI，按钮与交互控件具有真实质感；
 - ✅ **无需部署**：纯前端实现，支持离线运行。
+- ✅ **AI生成单词书**：GPT直接输出LaTeX代码，可编译成单词书
 
 ---
 
@@ -22,8 +23,13 @@
 
 1. 将字幕（如 `.ass`）转为 `.csv` 格式，包含以下三列（含表头）：
 
+```
    | Start Time | Chinese Sentence | English Sentence |
    |------------|------------------|------------------|
+```
+
+程序需要根据字幕格式和字幕组风格调整。
+
 
 2. 使用你自己的 Python 脚本（或参考我们提供的样例）输出 `unknown_words.txt`，其中包含你不认识的单词，每行一个词。
 
@@ -44,6 +50,10 @@ Start Time,Chinese Sentence,English Sentence,Hard Words
 0:00:14.13,你是谁,Who are you?,["Who"]
 ```
 
+### 第四步：AI释义并排版电子书
+
+访问[ChatGPT](https://chatgpt.com/g/g-680a05e7e40c819188f661e74f64e938-aidan-ci-shu-zhu-shou)，将生成的学习清单CSV文件内容直接复制并发送给ChatGPT，ChatGPT会直接添加单词释义并生成电子书LaTeX代码。使用Overleaf选择`xelatex`编译即可生成电子单词书。
+
 ## 📁 文件结构
 ```bash
 
@@ -61,14 +71,12 @@ AI-Words-Book/
 
 建议使用 Chrome 或 Firefox 浏览器获得最佳体验；
 
-你可以结合 ChatGPT、Google Translate 或词典 API 来辅助生成 unknown_words.txt。
 
 ## 💡 适合人群
 想提升词汇量的英语学习者；
 
 喜欢从真实语境中学习单词和表达的用户；
 
-希望构建个性化学习清单的字幕爱好者。
 
 ## 📜 License
 This project is licensed under the MIT License. Feel free to use and modify.
