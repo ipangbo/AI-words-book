@@ -9,12 +9,12 @@ from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 
 # 如果是第一次运行，需要下载这些资源，取消下面几行注释并执行一次：
-# download('punkt')
-# download('averaged_perceptron_tagger')
-# download('wordnet')
-# download('omw-1.4')
-# download('punkt_tab')
-# download('averaged_perceptron_tagger_eng')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('wordnet')
+# nltk.download('omw-1.4')
+# nltk.download('punkt_tab')
+# nltk.download('averaged_perceptron_tagger_eng')
 
 
 def get_wordnet_pos(tag):

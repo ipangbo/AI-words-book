@@ -4,7 +4,7 @@ import re
 
 def split_text(text):
     # 指定分隔符
-    separator = r"\N{\fnCronos Pro Subhead\fs15\1c&H3CF1F3&}"
+    separator = r"\N{\fn微软雅黑\fs16}"
 
     if separator in text:
         lst = text.split(separator)
@@ -27,7 +27,7 @@ def split_text(text):
 
 
 # Load the ASS subtitle file with UTF-16 encoding
-file_path = "subtitles/Severance/Severance S02E10.ass"
+file_path = "subtitles\Echo_Valley\echo.valley.ass"
 with open(file_path, "r", encoding="utf-8") as file:
     lines = file.readlines()
 
